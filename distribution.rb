@@ -75,3 +75,44 @@ module Zipf
     end
   end
 end
+
+module Heap
+  class Distribution
+    include Heap::Plotter
+
+    def initialize(filename)
+      @filename = filename
+    end
+
+    def text
+      @text ||= Nokogiri::HTML(File.open(@filename)).css('dd').text.sanitize
+    end
+
+    def frequency
+      @freq ||= begin
+        freq = Hash.new(0)
+        tmp = []
+        text.each do |word|
+          if !(word.include? '--') and (word != '')
+            freq[word] ||= 0
+            freq[word] += 1
+          end  
+          tmp << freq.keys.length
+        end
+        tmp
+      end
+    end
+
+    def heap_const
+      @heap ||= begin
+        heap = []
+        k = 1.84
+        b = 0.68
+        frequency.each_with_index do |v, i|
+          heap << b * Math::log(i+1) + k 
+        end
+        heap
+      end
+    end
+  end 
+end  
